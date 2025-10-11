@@ -7,7 +7,6 @@ import 'utils/colors.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Set preferred orientations and status bar
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -49,7 +48,7 @@ class BuccaKingApp extends StatelessWidget {
           },
         ),
       ),
-      home: const SplashScreen(),
+      home: const SplashScreen(),  // ← Starts here!
     );
   }
 }

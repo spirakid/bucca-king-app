@@ -1,3 +1,4 @@
+import 'package:bucca_king/screens/food_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/colors.dart';
@@ -442,8 +443,24 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount: 3,
           itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 15),
+            return InkWell(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FoodDetailScreen(
+          foodName: 'Jollof Rice & Chicken',
+          price: '₦3,500',
+          rating: '4.8',
+          time: '20-30 min',
+          index: index,
+        ),
+      ),
+    );
+  },
+  child: Container(
+    margin: const EdgeInsets.only(bottom: 15),
+    // ... rest of the container code stays the same,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
@@ -464,7 +481,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 90,
                       height: 90,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                         gradient: LinearGradient(
                           colors: [
                             // ignore: deprecated_member_use
                             AppColors.primary.withOpacity(0.1),
@@ -572,6 +589,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+            )
             );
           },
         ),
