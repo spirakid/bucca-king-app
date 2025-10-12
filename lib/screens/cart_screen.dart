@@ -3,9 +3,218 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../providers/cart_provider.dart';
+import '../services/firebase_service.dart';
+import '../models/order_model.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  final FirebaseService _firebaseService = FirebaseService();
+  bool _isProcessing = false;
+
+  Future<void> _placeOrder(CartProvider cart) async {
+    // Show address dialog first
+    String? address = await _showAddressDialog();
+    
+    if (address == null || address.isEmpty) {
+      return; // User cancelled
+    }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      // Convert cart items to order items
+      List<OrderItem> orderItems = cart.items.values.map((item) {
+        return OrderItem(
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        );
+      }).toList();
+
+      // Create order
+      OrderModel order = OrderModel(
+        id: '', // Firebase will generate
+        userId: 'user_123', // TODO: Replace with real user ID from auth
+        userName: 'Guest User', // TODO: Get from user profile
+        userPhone: '08012345678', // TODO: Get from user profile
+        userAddress: address,
+        items: orderItems,
+        subtotal: cart.totalAmount,
+        deliveryFee: cart.deliveryFee,
+        total: cart.grandTotal,
+        createdAt: DateTime.now(),
+      );
+
+      // Save to Firebase
+      String orderId = await _firebaseService.createOrder(order);
+
+      // Clear cart
+      cart.clear();
+
+      setState(() {
+        _isProcessing = false;
+      });
+
+      // Show success dialog
+      if (mounted) {
+        _showSuccessDialog(orderId);
+      }
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error placing order. Please try again.',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<String?> _showAddressDialog() async {
+    final TextEditingController addressController = TextEditingController();
+    final TextEditingController phoneController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Delivery Details',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                hintText: '08012345678',
+                prefixIcon: const Icon(Icons.phone),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: addressController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: 'Delivery Address',
+                hintText: 'Enter your full address',
+                prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(color: AppColors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (addressController.text.isNotEmpty && 
+                  phoneController.text.isNotEmpty) {
+                Navigator.pop(
+                  ctx,
+                  '${phoneController.text} | ${addressController.text}',
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
+            child: Text(
+              'Confirm',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessDialog(String orderId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle,
+                color: AppColors.success,
+                size: 60,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Order Placed! 🎉',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Text(
+          'Your order has been placed successfully!\n\nOrder ID: ${orderId.substring(0, 8)}\n\nWe\'ll notify you when it\'s ready.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx); // Close dialog
+                Navigator.pop(context); // Go back to home
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Text(
+                'Continue Shopping',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -329,37 +538,7 @@ class CartScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text(
-                        'Order Placed! 🎉',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                      ),
-                      content: Text(
-                        'Your order has been placed successfully!\n\nTotal: ₦${cart.grandTotal.toStringAsFixed(0)}',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            cart.clear();
-                            Navigator.pop(ctx);
-                            Navigator.pop(context);
-                          },
-                          child: Text(
-                            'OK',
-                            style: GoogleFonts.poppins(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                onPressed: _isProcessing ? null : () => _placeOrder(cart),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -368,13 +547,22 @@ class CartScreen extends StatelessWidget {
                   ),
                   elevation: 2,
                 ),
-                child: Text(
-                  'Proceed to Checkout',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: _isProcessing
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Place Order',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],
