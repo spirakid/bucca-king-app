@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../utils/colors.dart';
+import '../providers/cart_provider.dart';
+import 'cart_screen.dart';
 
 class FoodDetailScreen extends StatefulWidget {
   final String foodName;
@@ -46,6 +49,19 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
   }
 
   void _addToCart() {
+    final cart = Provider.of<CartProvider>(context, listen: false);
+
+    String priceString = widget.price.replaceAll('₦', '').replaceAll(',', '');
+    double price = double.parse(priceString);
+
+    for (int i = 0; i < _quantity; i++) {
+      cart.addItem(
+        'dish_${widget.index}',
+        widget.foodName,
+        price,
+      );
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -55,6 +71,16 @@ class _FoodDetailScreenState extends State<FoodDetailScreen> {
         backgroundColor: AppColors.success,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'VIEW CART',
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CartScreen()),
+            );
+          },
+        ),
       ),
     );
   }
