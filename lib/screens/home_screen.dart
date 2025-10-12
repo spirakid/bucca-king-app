@@ -1,5 +1,6 @@
 import 'package:bucca_king/screens/cart_screen.dart';
 import 'package:bucca_king/screens/food_detail_screen.dart';
+import 'package:bucca_king/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/colors.dart';
@@ -620,7 +621,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-              );
+              )
+            );
           },
         ),
       ],
@@ -642,19 +644,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-
-          if (index == 2) {
-            // Cart tab
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CartScreen()),
-            );
-          }
-        },
+       onTap: (index) {
+  setState(() {
+    _selectedIndex = index;
+  });
+  
+  if (index == 2) {  // Cart tab
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CartScreen()),
+    );
+  } else if (index == 3) {  // Profile tab
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+    );
+  }
+},
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textLight,
