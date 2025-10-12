@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "176626384167",
+    "project_id": "buccaking-b2542",
+    "storage_bucket": "buccaking-b2542.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:176626384167:android:8ad7bf17cc1c962bdfbd02",
+        "android_client_info": {
+          "package_name": "com.buccaking.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhJJpBVJRl0mKnzF0mvTiNIYZ2kpc932k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
