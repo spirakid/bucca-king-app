@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../utils/colors.dart';
 import '../services/firebase_service.dart';
 import '../models/order_model.dart';
+import 'order_tracking_screen.dart';
 
 class OrderHistoryScreen extends StatelessWidget {
   final String userId;
@@ -161,7 +162,14 @@ class OrderHistoryScreen extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: () => _showOrderDetails(context, order),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderTrackingScreen(orderId: order.id),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),

@@ -1,3 +1,4 @@
+import 'package:bucca_king/screens/order_tracking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -162,54 +163,23 @@ class _CartScreenState extends State<CartScreen> {
   void _showSuccessDialog(String orderId) {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                color: AppColors.success,
-                size: 60,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Order Placed! 🎉',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Text(
-          'Your order has been placed successfully!\n\nOrder ID: ${orderId.substring(0, 8)}\n\nWe\'ll notify you when it\'s ready.',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(),
-        ),
+        title: Text('Order Placed', style: GoogleFonts.poppins()),
+        content: Text('Your order has been placed successfully.', style: GoogleFonts.poppins()),
         actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx); // Close dialog
-                Navigator.pop(context); // Go back to home
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                'Continue Shopping',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx); // Close dialog
+              Navigator.pop(context); // Go back
+              // Navigate to tracking
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OrderTrackingScreen(orderId: orderId),
                 ),
-              ),
-            ),
+              );
+            },
+            child: Text('TRACK ORDER', style: GoogleFonts.poppins()),
           ),
         ],
       ),
