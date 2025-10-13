@@ -1,5 +1,6 @@
 plugins {
-    id("com.google.gms.google-services") version "4.4.3" apply false
+    // Use the same google-services plugin version that's already on the classpath
+    id("com.google.gms.google-services") version "4.3.15" apply false
 }
 
 allprojects {

@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/colors.dart';
+import '../services/auth_service.dart';
 import 'order_history_screen.dart';
 import 'auth/login_screen.dart';
+import 'edit_profile_screen.dart'; // <--- added import
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                'GU',
+                _authService.getUserInitial(),
                 style: GoogleFonts.poppins(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -77,7 +86,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Guest User',
+            _authService.getUserName(),
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -86,7 +95,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'guest@buccaking.com',
+            _authService.getUserEmail(),
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.white.withOpacity(0.9),
@@ -134,7 +143,12 @@ class ProfileScreen extends StatelessWidget {
             Icons.person_outline,
             AppColors.info,
             () {
-              _showComingSoon(context, 'Edit Profile');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
+              );
             },
           ),
           const Divider(height: 1),

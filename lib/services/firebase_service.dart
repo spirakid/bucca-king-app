@@ -13,6 +13,7 @@ class FirebaseService {
       
       return docRef.id;
     } catch (e) {
+      // ignore: avoid_print
       print('Error creating order: $e');
       rethrow;
     }

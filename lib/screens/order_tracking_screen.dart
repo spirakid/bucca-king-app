@@ -82,7 +82,6 @@ class OrderTrackingScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(OrderModel order) {
-    Color statusColor = _getStatusColor(order.status);
     IconData statusIcon = _getStatusIcon(order.status);
 
     return Container(
@@ -424,22 +423,6 @@ class OrderTrackingScreen extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return AppColors.warning;
-      case 'preparing':
-        return AppColors.info;
-      case 'on_the_way':
-        return AppColors.secondary;
-      case 'delivered':
-        return AppColors.success;
-      case 'cancelled':
-        return AppColors.error;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
 
   IconData _getStatusIcon(String status) {
     switch (status) {
