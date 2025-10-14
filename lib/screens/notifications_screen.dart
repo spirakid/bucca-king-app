@@ -6,13 +6,20 @@ import '../services/auth_service.dart';
 import '../models/order_model.dart';
 import 'order_tracking_screen.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  final FirebaseService _firebaseService = FirebaseService();
+  final AuthService _authService = AuthService();
+
+  @override
   Widget build(BuildContext context) {
-    final FirebaseService firebaseService = FirebaseService();
-    final AuthService authService = AuthService();
+    final currentUserId = _authService.userId;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -32,39 +39,81 @@ class NotificationsScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: StreamBuilder<List<OrderModel>>(
-        stream: firebaseService.getUserOrders(authService.userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            );
-          }
+      body: currentUserId == null
+          ? _buildEmptyState(context)
+          : StreamBuilder<List<OrderModel>>(
+              stream: _firebaseService.getUserOrders(currentUserId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
+                }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading notifications',
-                style: GoogleFonts.poppins(),
-              ),
-            );
-          }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 60,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error loading notifications',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          snapshot.error.toString(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {}); // Trigger rebuild
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: Text(
+                            'Retry',
+                            style: GoogleFonts.poppins(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-          final orders = snapshot.data ?? [];
+                final orders = snapshot.data ?? [];
 
-          if (orders.isEmpty) {
-            return _buildEmptyState(context);
-          }
+                if (orders.isEmpty) {
+                  return _buildEmptyState(context);
+                }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: orders.length,
-            itemBuilder: (context, index) {
-              return _buildNotificationItem(context, orders[index]);
-            },
-          );
-        },
-      ),
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    return _buildNotificationItem(context, orders[index]);
+                  },
+                );
+              },
+            ),
     );
   }
 
