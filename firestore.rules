@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only access their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Menu items are read-only for all users, write access restricted
+    match /menu_items/{itemId} {
+      allow read: if true;
+      allow write: if false; // Only admins should be able to write menu items
+    }
+    
+    // Orders can be read and written by authenticated users
+    match /orders/{orderId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Notifications for authenticated users
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    
+    // Cart items - users can only access their own cart
+    match /carts/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Reviews - users can write their own reviews, read all reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

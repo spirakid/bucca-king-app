@@ -1,0 +1,80 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient circle -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FF8E53;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="burgerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B4513;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D2691E;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lettuce" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#228B22;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#32CD32;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cheese" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" stroke="#FFF" stroke-width="8"/>
+  
+  <!-- Burger -->
+  <!-- Top bun -->
+  <ellipse cx="256" cy="180" rx="120" ry="45" fill="url(#burgerGradient)"/>
+  <!-- Sesame seeds -->
+  <circle cx="220" cy="170" r="4" fill="#F5DEB3"/>
+  <circle cx="250" cy="165" r="4" fill="#F5DEB3"/>
+  <circle cx="280" cy="170" r="4" fill="#F5DEB3"/>
+  <circle cx="240" cy="185" r="4" fill="#F5DEB3"/>
+  <circle cx="270" cy="185" r="4" fill="#F5DEB3"/>
+  
+  <!-- Lettuce -->
+  <ellipse cx="256" cy="220" rx="110" ry="20" fill="url(#lettuce)"/>
+  <path d="M 146 220 Q 156 210 166 220 Q 176 210 186 220 Q 196 210 206 220 Q 216 210 226 220 Q 236 210 246 220 Q 256 210 266 220 Q 276 210 286 220 Q 296 210 306 220 Q 316 210 326 220 Q 336 210 346 220 Q 356 210 366 220" 
+        stroke="url(#lettuce)" stroke-width="15" fill="none"/>
+  
+  <!-- Cheese -->
+  <ellipse cx="256" cy="250" rx="105" ry="15" fill="url(#cheese)"/>
+  <path d="M 151 250 Q 171 240 191 250 Q 211 240 231 250 Q 251 240 271 250 Q 291 240 311 250 Q 331 240 351 250 Q 361 245 361 250" 
+        stroke="url(#cheese)" stroke-width="12" fill="none"/>
+  
+  <!-- Meat patty -->
+  <ellipse cx="256" cy="280" rx="115" ry="25" fill="#654321"/>
+  <ellipse cx="256" cy="275" rx="115" ry="25" fill="#8B4513"/>
+  <!-- Grill marks -->
+  <line x1="180" y1="270" x2="190" y2="285" stroke="#4A4A4A" stroke-width="3"/>
+  <line x1="210" y1="270" x2="220" y2="285" stroke="#4A4A4A" stroke-width="3"/>
+  <line x1="240" y1="270" x2="250" y2="285" stroke="#4A4A4A" stroke-width="3"/>
+  <line x1="270" y1="270" x2="280" y2="285" stroke="#4A4A4A" stroke-width="3"/>
+  <line x1="300" y1="270" x2="310" y2="285" stroke="#4A4A4A" stroke-width="3"/>
+  
+  <!-- Tomato -->
+  <ellipse cx="256" cy="310" rx="100" ry="18" fill="#FF6347"/>
+  <circle cx="200" cy="305" r="12" fill="#FF6347"/>
+  <circle cx="230" cy="315" r="12" fill="#FF6347"/>
+  <circle cx="280" cy="315" r="12" fill="#FF6347"/>
+  <circle cx="310" cy="305" r="12" fill="#FF6347"/>
+  
+  <!-- Bottom bun -->
+  <ellipse cx="256" cy="340" rx="120" ry="35" fill="url(#burgerGradient)"/>
+  
+  <!-- Crown decoration -->
+  <polygon points="256,120 275,140 295,125 315,140 335,125 350,140 330,150 310,135 290,150 270,135 250,150 230,135 210,150 180,140 200,125 220,140 240,125" 
+           fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
+  
+  <!-- Restaurant text -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="36" font-weight="bold" 
+        text-anchor="middle" fill="#FFF" stroke="#333" stroke-width="1">BUCCA</text>
+  <text x="256" y="455" font-family="Arial, sans-serif" font-size="28" font-weight="bold" 
+        text-anchor="middle" fill="#FFF" stroke="#333" stroke-width="1">KING</text>
+        
+  <!-- Decorative stars -->
+  <path d="M 80 100 L 85 110 L 95 110 L 87 117 L 90 127 L 80 120 L 70 127 L 73 117 L 65 110 L 75 110 Z" fill="#FFD700"/>
+  <path d="M 430 380 L 435 390 L 445 390 L 437 397 L 440 407 L 430 400 L 420 407 L 423 397 L 415 390 L 425 390 Z" fill="#FFD700"/>
+  <path d="M 100 400 L 105 410 L 115 410 L 107 417 L 110 427 L 100 420 L 90 427 L 93 417 L 85 410 L 95 410 Z" fill="#FFD700"/>
+</svg>

@@ -1,12 +1,9 @@
-import 'package:bucca_king/screens/order_tracking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../providers/cart_provider.dart';
-import '../services/firebase_service.dart';
-import '../services/auth_service.dart';
-import '../models/order_model.dart';
+import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -16,198 +13,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final FirebaseService _firebaseService = FirebaseService();
-  final AuthService _authService = AuthService();
-  bool _isProcessing = false;
-
-  Future<void> _placeOrder(CartProvider cart) async {
-    String? address = await _showAddressDialog();
-    
-    if (address == null || address.isEmpty) {
-      return;
-    }
-
-    setState(() {
-      _isProcessing = true;
-    });
-
-    try {
-      // Get user data
-      String userName = await _authService.getCachedUserName();
-      String userId = _authService.currentUserId ?? '_authService.userId';
-      
-      // Extract phone and address from input
-      List<String> parts = address.split('|');
-      String phone = parts.length > 1 ? parts[0].trim() : '';
-      String deliveryAddress = parts.length > 1 ? parts[1].trim() : address;
-
-      List<OrderItem> orderItems = cart.items.values.map((item) {
-        return OrderItem(
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        );
-      }).toList();
-
-      OrderModel order = OrderModel(
-        id: '',
-        userId: userId,
-        userName: userName,
-        userPhone: phone,
-        userAddress: deliveryAddress,
-        items: orderItems,
-        subtotal: cart.totalAmount,
-        deliveryFee: cart.deliveryFee,
-        total: cart.grandTotal,
-        createdAt: DateTime.now(),
-      );
-
-      String orderId = await _firebaseService.createOrder(order);
-
-      cart.clear();
-
-      setState(() {
-        _isProcessing = false;
-      });
-
-      if (mounted) {
-        _showSuccessDialog(orderId);
-      }
-    } catch (e) {
-      setState(() {
-        _isProcessing = false;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error placing order. Please try again.',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<String?> _showAddressDialog() async {
-    final TextEditingController addressController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
-
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Delivery Details',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Phone Number',
-                hintText: '08012345678',
-                prefixIcon: const Icon(Icons.phone),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: addressController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'Delivery Address',
-                hintText: 'Enter your full address',
-                prefixIcon: const Icon(Icons.location_on),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.poppins(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (addressController.text.isNotEmpty && 
-                  phoneController.text.isNotEmpty) {
-                Navigator.pop(
-                  ctx,
-                  '${phoneController.text} | ${addressController.text}',
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
-            child: Text(
-              'Confirm',
-              style: GoogleFonts.poppins(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSuccessDialog(String orderId) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: Text('Order Placed', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-        content: Text(
-          'Your order has been placed successfully!',
-          style: GoogleFonts.poppins(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'GO HOME',
-              style: GoogleFonts.poppins(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OrderTrackingScreen(orderId: orderId),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: Text(
-              'TRACK ORDER',
-              style: GoogleFonts.poppins(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
@@ -530,7 +335,12 @@ class _CartScreenState extends State<CartScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: _isProcessing ? null : () => _placeOrder(cart),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -539,22 +349,13 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   elevation: 2,
                 ),
-                child: _isProcessing
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Place Order',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                child: Text(
+                  'Proceed to Checkout',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],

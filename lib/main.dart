@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'firebase_options.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home_screen.dart';
@@ -62,18 +64,43 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _showSplash = true;
+  bool _splashCompleted = false;
+  late final AuthService _authService;
+  StreamSubscription<User?>? _authSubscription;
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _authService = AuthService();
+    _currentUser = _authService.currentUser;
+    
     // Show splash for 3 seconds, then switch to real-time auth
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
           _showSplash = false;
+          _splashCompleted = true;
+        });
+        _startAuthListener();
+      }
+    });
+  }
+
+  void _startAuthListener() {
+    _authSubscription = _authService.authStateChanges.listen((User? user) {
+      if (mounted && _splashCompleted) {
+        setState(() {
+          _currentUser = user;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -83,26 +110,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return const SplashScreen();
     }
 
-    // After splash, show real-time auth wrapper
-    final AuthService authService = AuthService();
-    
-    return StreamBuilder(
-      stream: authService.authStateChanges,
-      builder: (context, snapshot) {
-        // Show minimal loading with same colors as splash for smooth transition
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildQuickLoadingScreen();
-        }
-        
-        // If user is logged in, show home screen
-        if (snapshot.hasData && snapshot.data != null) {
-          return const HomeScreen();
-        }
-        
-        // If user is not logged in, show login screen
-        return const LoginScreen();
-      },
-    );
+    // Show quick loading if auth state hasn't been determined yet
+    if (!_splashCompleted) {
+      return _buildQuickLoadingScreen();
+    }
+
+    // After splash, show appropriate screen based on auth state
+    if (_currentUser != null) {
+      return const HomeScreen();
+    } else {
+      return const LoginScreen();
+    }
   }
 
   Widget _buildQuickLoadingScreen() {

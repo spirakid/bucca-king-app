@@ -27,7 +27,8 @@ dependencies:
   firebase_core: ^2.24.2 
   firebase_auth:  ^4.16.0  
   cloud_firestore: ^4.14.0 
-  firebase_messaging: ^14.7.10
+  firebase_messaging: ^14.7.9
+  flutter_local_notifications: ^16.3.0
 
   google_sign_in: ^6.2.2
 
@@ -38,6 +39,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -45,3 +47,11 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+
+# App Icon Configuration
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#FF6B35"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
