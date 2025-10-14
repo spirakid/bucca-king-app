@@ -4,14 +4,30 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'utils/colors.dart';
 import 'providers/cart_provider.dart';
+import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('❌ Firebase initialization error: $e');
+  }
+  
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
   runApp(const BuccaKingApp());
 }
 
@@ -31,7 +47,83 @@ class BuccaKingApp extends StatelessWidget {
           textTheme: GoogleFonts.poppinsTextTheme(),
           scaffoldBackgroundColor: AppColors.background,
         ),
-        home: const SplashScreen(),
+        home: const AuthWrapper(),
+      ),
+    );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _showSplash = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Show splash for 3 seconds, then switch to real-time auth
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _showSplash = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Show splash screen initially
+    if (_showSplash) {
+      return const SplashScreen();
+    }
+
+    // After splash, show real-time auth wrapper
+    final AuthService authService = AuthService();
+    
+    return StreamBuilder(
+      stream: authService.authStateChanges,
+      builder: (context, snapshot) {
+        // Show minimal loading with same colors as splash for smooth transition
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildQuickLoadingScreen();
+        }
+        
+        // If user is logged in, show home screen
+        if (snapshot.hasData && snapshot.data != null) {
+          return const HomeScreen();
+        }
+        
+        // If user is not logged in, show login screen
+        return const LoginScreen();
+      },
+    );
+  }
+
+  Widget _buildQuickLoadingScreen() {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primary,
+              AppColors.primaryLight,
+              AppColors.secondary
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
       ),
     );
   }

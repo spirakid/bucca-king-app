@@ -1,9 +1,7 @@
-// screens/auth/signup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../utils/colors.dart';
 import '../../services/auth_service.dart';
-import '../home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -67,10 +65,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         );
         
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
+        // No manual navigation needed - AuthWrapper will handle this automatically
+        // when it detects the auth state change
+      } else {
+        setState(() {
+          _errorMessage = result['message'];
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final result = await _authService.signInWithGoogle();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (result['success']) {
+        // No manual navigation needed - AuthWrapper will handle this automatically
+        // when it detects the auth state change
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Google sign-in successful!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
         );
       } else {
         setState(() {
@@ -101,7 +127,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Title
                   Text(
                     'Create Account',
                     style: GoogleFonts.poppins(
@@ -123,7 +148,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 32),
                   
-                  // Full Name Field
                   TextFormField(
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
@@ -139,7 +163,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -159,7 +183,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 20),
                   
-                  // Email Field
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -175,7 +198,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -195,7 +218,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 20),
                   
-                  // Phone Number Field
                   TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
@@ -211,7 +233,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -231,7 +253,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 20),
                   
-                  // Password Field
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -258,7 +279,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -278,7 +299,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 20),
                   
-                  // Confirm Password Field
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirmPassword,
@@ -305,7 +325,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: const BorderSide(color: AppColors.border),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -323,7 +343,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   
-                  // Error Message
                   if (_errorMessage != null)
                     Container(
                       margin: const EdgeInsets.only(top: 16),
@@ -352,7 +371,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 32),
                   
-                  // Sign Up Button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -387,7 +405,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  // Login Link
+                  Row(
+                    children: [
+                      const Expanded(child: Divider(color: AppColors.border)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider(color: AppColors.border)),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading ? null : _handleGoogleSignIn,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.border),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: Image.network(
+                        'https://www.google.com/favicon.ico',
+                        width: 24,
+                        height: 24,
+                      ),
+                      label: Text(
+                        'Continue with Google',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

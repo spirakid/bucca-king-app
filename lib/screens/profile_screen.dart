@@ -4,7 +4,7 @@ import '../utils/colors.dart';
 import '../services/auth_service.dart';
 import 'order_history_screen.dart';
 import 'auth/login_screen.dart';
-import 'edit_profile_screen.dart'; // <--- added import
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -131,7 +131,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const OrderHistoryScreen(),
+                  builder: (context) => OrderHistoryScreen(
+                    userId: _authService.userId,
+                  ),
                 ),
               );
             },
@@ -434,13 +436,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
+              await _authService.signOut();
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
             },
             child: Text(
               'Logout',

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../utils/colors.dart';
 import '../providers/cart_provider.dart';
 import '../services/firebase_service.dart';
+import '../services/auth_service.dart';
 import '../models/order_model.dart';
 
 class CartScreen extends StatefulWidget {
@@ -16,14 +17,14 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final FirebaseService _firebaseService = FirebaseService();
+  final AuthService _authService = AuthService();
   bool _isProcessing = false;
 
   Future<void> _placeOrder(CartProvider cart) async {
-    // Show address dialog first
     String? address = await _showAddressDialog();
     
     if (address == null || address.isEmpty) {
-      return; // User cancelled
+      return;
     }
 
     setState(() {
@@ -31,7 +32,15 @@ class _CartScreenState extends State<CartScreen> {
     });
 
     try {
-      // Convert cart items to order items
+      // Get user data
+      String userName = await _authService.getCachedUserName();
+      String userId = _authService.currentUserId ?? '_authService.userId';
+      
+      // Extract phone and address from input
+      List<String> parts = address.split('|');
+      String phone = parts.length > 1 ? parts[0].trim() : '';
+      String deliveryAddress = parts.length > 1 ? parts[1].trim() : address;
+
       List<OrderItem> orderItems = cart.items.values.map((item) {
         return OrderItem(
           id: item.id,
@@ -41,13 +50,12 @@ class _CartScreenState extends State<CartScreen> {
         );
       }).toList();
 
-      // Create order
       OrderModel order = OrderModel(
-        id: '', // Firebase will generate
-        userId: 'user_123', // TODO: Replace with real user ID from auth
-        userName: 'Guest User', // TODO: Get from user profile
-        userPhone: '08012345678', // TODO: Get from user profile
-        userAddress: address,
+        id: '',
+        userId: userId,
+        userName: userName,
+        userPhone: phone,
+        userAddress: deliveryAddress,
         items: orderItems,
         subtotal: cart.totalAmount,
         deliveryFee: cart.deliveryFee,
@@ -55,17 +63,14 @@ class _CartScreenState extends State<CartScreen> {
         createdAt: DateTime.now(),
       );
 
-      // Save to Firebase
       String orderId = await _firebaseService.createOrder(order);
 
-      // Clear cart
       cart.clear();
 
       setState(() {
         _isProcessing = false;
       });
 
-      // Show success dialog
       if (mounted) {
         _showSuccessDialog(orderId);
       }
@@ -163,15 +168,28 @@ class _CartScreenState extends State<CartScreen> {
   void _showSuccessDialog(String orderId) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: Text('Order Placed', style: GoogleFonts.poppins()),
-        content: Text('Your order has been placed successfully.', style: GoogleFonts.poppins()),
+        title: Text('Order Placed', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        content: Text(
+          'Your order has been placed successfully!',
+          style: GoogleFonts.poppins(),
+        ),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(ctx); // Close dialog
-              Navigator.pop(context); // Go back
-              // Navigate to tracking
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: Text(
+              'GO HOME',
+              style: GoogleFonts.poppins(color: AppColors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -179,7 +197,11 @@ class _CartScreenState extends State<CartScreen> {
                 ),
               );
             },
-            child: Text('TRACK ORDER', style: GoogleFonts.poppins()),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: Text(
+              'TRACK ORDER',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
           ),
         ],
       ),

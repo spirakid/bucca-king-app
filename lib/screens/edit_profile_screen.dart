@@ -26,28 +26,63 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final profile = await _authService.getUserProfile();
-    if (profile != null && mounted) {
-      setState(() {
-        _nameController.text = profile['name'] ?? '';
-        _phoneController.text = profile['phone'] ?? '';
-        _addressController.text = profile['address'] ?? '';
-        _isLoadingProfile = false;
-      });
-    } else {
-      setState(() {
-        _nameController.text = _authService.getUserName();
-        _isLoadingProfile = false;
-      });
+    try {
+      final profile = await _authService.getUserProfile();
+      if (profile != null && mounted) {
+        setState(() {
+          _nameController.text = profile['name'] ?? _authService.getUserName();
+          _phoneController.text = profile['phone'] ?? '';
+          _addressController.text = profile['address'] ?? '';
+          _isLoadingProfile = false;
+        });
+      } else {
+        // Fallback to basic user info
+        if (mounted) {
+          setState(() {
+            _nameController.text = _authService.getUserName();
+            _phoneController.text = '';
+            _addressController.text = '';
+            _isLoadingProfile = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading profile: $e');
+      if (mounted) {
+        setState(() {
+          _nameController.text = _authService.getUserName();
+          _phoneController.text = '';
+          _addressController.text = '';
+          _isLoadingProfile = false;
+        });
+        
+        // Show error message to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading profile: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _saveProfile() async {
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Name cannot be empty', style: GoogleFonts.poppins()),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    bool success = await _authService.updateProfile(
+    final result = await _authService.updateUserProfile(
       name: _nameController.text.trim(),
       phone: _phoneController.text.trim(),
       address: _addressController.text.trim(),
@@ -58,7 +93,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _isLoading = false;
       });
 
-      if (success) {
+      if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -73,7 +108,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Failed to update profile',
+              result['message'] ?? 'Failed to update profile',
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: AppColors.error,

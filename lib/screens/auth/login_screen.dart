@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../utils/colors.dart';
 import '../../services/auth_service.dart';
-import '../home_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -49,10 +48,14 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (result['success']) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false,
+        // No manual navigation needed - AuthWrapper will handle this automatically
+        // when it detects the auth state change
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
         );
       } else {
         setState(() {
@@ -85,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Icon(
                         Icons.restaurant_menu,
                         size: 60,

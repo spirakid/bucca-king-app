@@ -39,9 +39,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         centerTitle: true,
       ),
-      body: currentUserId == null
-          ? _buildEmptyState(context)
-          : StreamBuilder<List<OrderModel>>(
+      body: StreamBuilder<List<OrderModel>>(
               stream: _firebaseService.getUserOrders(currentUserId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

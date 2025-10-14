@@ -12,7 +12,12 @@
           "package_name": "com.buccaking.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "176626384167-bm1ehihll8cg25vqp50htek9pj17vt4c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDhJJpBVJRl0mKnzF0mvTiNIYZ2kpc932k"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "176626384167-bm1ehihll8cg25vqp50htek9pj17vt4c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "176626384167-51eelkmptf98uln63kofljgo24jljt1e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.buccaKing"
+              }
+            }
+          ]
         }
       }
     }

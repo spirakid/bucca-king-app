@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/colors.dart';
-import '../services/auth_service.dart';
-import 'home_screen.dart';
-import 'auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,8 +17,6 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<double> _logoAnimation;
   late final Animation<double> _textAnimation;
   late final Animation<double> _circleAnimation;
-
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -61,23 +56,10 @@ class _SplashScreenState extends State<SplashScreen>
         const Duration(milliseconds: 800), () => _textController.forward());
   }
 
-  void _checkAuthAndNavigate() {
-    Future.delayed(const Duration(seconds: 3), () async {
-      if (!mounted) return;
-      final bool isLoggedIn = _authService.isLoggedIn; // keep as getter
-      Navigator.of(context).pushReplacement(PageRouteBuilder(
-        pageBuilder: (context, a1, a2) => isLoggedIn
-            ? const HomeScreen()
-            : const LoginScreen(),
-        transitionsBuilder: (context, animation, secondary, child) {
-          final tween = Tween(begin: const Offset(1, 0), end: Offset.zero)
-              .chain(CurveTween(curve: Curves.easeInOutCubic));
-          return SlideTransition(
-              position: animation.drive(tween), child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 700),
-      ));
-    });
+  void _checkAuthAndNavigate() async {
+    // Just wait for the animations to complete
+    // AuthWrapper will handle the actual navigation
+    await Future.delayed(const Duration(seconds: 3));
   }
 
   @override
