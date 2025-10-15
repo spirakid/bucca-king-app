@@ -30,13 +30,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final profile = await _authService.getUserProfile();
       if (profile != null && mounted) {
         setState(() {
-          _nameController.text = profile['name'] ?? _authService.getUserName();
+          _nameController.text = profile['name'] ?? '';
           _phoneController.text = profile['phone'] ?? '';
           _addressController.text = profile['address'] ?? '';
           _isLoadingProfile = false;
         });
       } else {
-        // Fallback to basic user info
         if (mounted) {
           setState(() {
             _nameController.text = _authService.getUserName();
@@ -55,14 +54,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _addressController.text = '';
           _isLoadingProfile = false;
         });
-        
-        // Show error message to user
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading profile: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
       }
     }
   }

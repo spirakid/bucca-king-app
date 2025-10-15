@@ -4,29 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
-  // Singleton pattern
-  static final AuthService _instance = AuthService._internal();
-  factory AuthService() => _instance;
-  AuthService._internal();
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Current user getter
   User? get currentUser => _auth.currentUser;
-  
-  // User ID getters
   String get userId => _auth.currentUser?.uid ?? '';
   String? get currentUserId => _auth.currentUser?.uid;
-  
-  // Check if logged in (getter - NO parentheses)
   bool get isLoggedIn => _auth.currentUser != null;
-  
-  // Auth state stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // ========== EMAIL/PASSWORD SIGNUP ==========
   Future<Map<String, dynamic>> signUp({
     required String name,
     required String email,
@@ -45,6 +32,7 @@ class AuthService {
       }
 
       await user.updateDisplayName(name);
+      await user.reload();
 
       await _firestore.collection('users').doc(user.uid).set({
         'uid': user.uid,
@@ -69,7 +57,6 @@ class AuthService {
     }
   }
 
-  // ========== EMAIL/PASSWORD LOGIN ==========
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -113,7 +100,6 @@ class AuthService {
     }
   }
 
-  // ========== GOOGLE SIGN IN ==========
   Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -169,7 +155,6 @@ class AuthService {
     }
   }
 
-  // ========== GET USER DATA ==========
   Future<Map<String, dynamic>?> getUserProfile() async {
     try {
       if (currentUser == null) return null;
@@ -182,7 +167,6 @@ class AuthService {
       if (doc.exists) {
         final rawData = doc.data();
         if (rawData is Map<String, dynamic>) {
-          // Ensure all required fields exist
           return {
             'name': rawData['name'] ?? currentUser!.displayName ?? '',
             'phone': rawData['phone'] ?? '',
@@ -190,32 +174,16 @@ class AuthService {
             'email': rawData['email'] ?? currentUser!.email ?? '',
             'uid': rawData['uid'] ?? currentUser!.uid,
           };
-        } else {
-          // If data exists but is not the expected format, return defaults
-          return {
-            'name': currentUser!.displayName ?? '',
-            'phone': '',
-            'address': '',
-            'email': currentUser!.email ?? '',
-            'uid': currentUser!.uid,
-          };
         }
-      } else {
-        // Create a basic profile if doesn't exist
-        final basicProfile = {
-          'name': currentUser!.displayName ?? '',
-          'phone': '',
-          'address': '',
-          'email': currentUser!.email ?? '',
-          'uid': currentUser!.uid,
-          'createdAt': FieldValue.serverTimestamp(),
-        };
-        
-        // Create the document
-        await _firestore.collection('users').doc(currentUser!.uid).set(basicProfile);
-        
-        return basicProfile;
       }
+      
+      return {
+        'name': currentUser!.displayName ?? '',
+        'phone': '',
+        'address': '',
+        'email': currentUser!.email ?? '',
+        'uid': currentUser!.uid,
+      };
     } catch (e) {
       print('Error getting user profile: $e');
       return null;
@@ -227,6 +195,26 @@ class AuthService {
     return currentUser?.displayName ?? 'User';
   }
 
+  // Add this new async method to get name from Firestore
+  Future<String> getUserNameAsync() async {
+    try {
+      if (currentUser == null) return 'User';
+      
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(currentUser!.uid)
+          .get();
+      
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>?;
+        return data?['name'] ?? currentUser!.displayName ?? 'User';
+      }
+      return currentUser!.displayName ?? 'User';
+    } catch (e) {
+      return currentUser?.displayName ?? 'User';
+    }
+  }
+
   String getUserEmail() {
     return currentUser?.email ?? '';
   }
@@ -236,7 +224,6 @@ class AuthService {
     return name.isNotEmpty ? name[0].toUpperCase() : 'U';
   }
 
-  // ========== CACHED USER DATA ==========
   Future<String> getCachedUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('userName') ?? getUserName();
@@ -254,18 +241,24 @@ class AuthService {
         return {'success': false, 'message': 'User not authenticated'};
       }
 
-      // Update display name in Firebase Auth
-      await user.updateDisplayName(name);
-
-      // Update user data in Firestore (use set with merge to create if doesn't exist)
+      // Update user data in Firestore FIRST
       await _firestore.collection('users').doc(user.uid).set({
+        'uid': user.uid,
         'name': name,
+        'email': user.email ?? '',
         'phone': phone,
         'address': address,
         'updatedAt': FieldValue.serverTimestamp(),
-        'uid': user.uid,
-        'email': user.email ?? '',
       }, SetOptions(merge: true));
+
+      // Try to update display name (ignore errors)
+      try {
+        await user.updateDisplayName(name);
+        await user.reload();
+      } catch (e) {
+        print('Warning: Could not update display name: $e');
+        // Continue anyway - Firestore update is more important
+      }
 
       // Update cached data
       final prefs = await SharedPreferences.getInstance();
@@ -276,14 +269,14 @@ class AuthService {
         'message': 'Profile updated successfully'
       };
     } catch (e) {
+      print('Error updating profile: $e');
       return {
         'success': false,
-        'message': 'Failed to update profile: $e'
+        'message': 'Failed to update profile. Please try again.'
       };
     }
   }
 
-  // ========== SIGN OUT ==========
   Future<void> signOut() async {
     try {
       await _auth.signOut();
@@ -297,7 +290,6 @@ class AuthService {
     }
   }
 
-  // ========== PRIVATE HELPERS ==========
   Future<void> _cacheUserData(String uid, String name, String email) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', true);

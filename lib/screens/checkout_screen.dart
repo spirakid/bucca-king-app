@@ -13,6 +13,7 @@ class CheckoutScreen extends StatefulWidget {
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
+
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final AuthService _authService = AuthService();
   String _selectedPayment = 'cash';
@@ -50,6 +51,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Ensure user is authenticated and userId is available
+    if (_authService.userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Authentication error. Please log in again.', style: GoogleFonts.poppins()),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isProcessing = true);
 
     try {
@@ -71,13 +83,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'total': cart.grandTotal,
         'paymentMethod': _selectedPayment,
         'status': 'pending',
+        'adminSeen': false,
         'createdAt': FieldValue.serverTimestamp(),
       };
 
       final docRef = await FirebaseFirestore.instance.collection('orders').add(orderData);
 
       await FirebaseFirestore.instance.collection('notifications').add({
-        'userId': _authService.userId,
+        'userId': _authService.userId, // Make sure this is not null
         'title': '🎉 Order Placed Successfully!',
         'body': 'Your order has been received and is being prepared.',
         'type': 'order_status',
@@ -90,6 +103,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       cart.clear();
 
       if (mounted) {
+        // Navigate to order success screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
